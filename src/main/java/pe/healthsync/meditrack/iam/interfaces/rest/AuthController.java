@@ -40,7 +40,7 @@ public class AuthController {
     public ResponseEntity<SignUpResponse> signUp(@RequestBody SignUpRequest req) {
         var command = req.toCommand();
         var user = userCommandService.handle(command);
-        var qrCode = userCommandService.handle(new GenerateUserQrCommand(user.getEmail(), user.getPassword()));
+        var qrCode = userCommandService.handle(new GenerateUserQrCommand(user.getEmail(), req.password()));
         var registerResponse = new SignUpResponse(qrCode);
         return new ResponseEntity<>(registerResponse, HttpStatus.CREATED);
     }
