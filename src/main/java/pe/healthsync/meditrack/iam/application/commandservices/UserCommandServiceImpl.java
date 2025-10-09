@@ -7,6 +7,7 @@ import pe.healthsync.meditrack.iam.application.outboundservices.hashing.HashingS
 import pe.healthsync.meditrack.iam.application.outboundservices.tokens.TokenService;
 import pe.healthsync.meditrack.iam.domain.model.aggregates.User;
 import pe.healthsync.meditrack.iam.domain.model.commands.GenerateUserQrCommand;
+import pe.healthsync.meditrack.iam.domain.model.commands.RegisterUserCommand;
 import pe.healthsync.meditrack.iam.domain.model.commands.SignInCommand;
 import pe.healthsync.meditrack.iam.domain.model.commands.SignUpCommand;
 import pe.healthsync.meditrack.iam.domain.model.commands.Verify2FACommand;
@@ -47,6 +48,7 @@ public class UserCommandServiceImpl implements UserCommandService {
     @Override
     public User handle(SignInCommand command) {
         var userOpt = userRepository.findByEmail(command.email());
+
         if (userOpt.isEmpty())
             throw new IllegalArgumentException("Invalid credentials");
 
@@ -92,4 +94,22 @@ public class UserCommandServiceImpl implements UserCommandService {
         }
     }
 
+    @Override
+    public User handle(RegisterUserCommand command) {
+        var adminUser = userRepository.findById(command.adminId())
+                .orElseThrow(() -> new IllegalArgumentException("Admin user not found"));
+
+        var secret = totpService.generateSecret();
+        var hashedPassword = hashingService.encode(command.password());
+
+        var newCommand = new RegisterUserCommand(
+                command.adminId(),
+                command.email(),
+                hashedPassword,
+                secret);
+
+        var newUser = adminUser.registerUser(newCommand);
+
+        return userRepository.save(newUser);
+    }
 }

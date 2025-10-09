@@ -1,25 +1,33 @@
 package pe.healthsync.meditrack.iam.infrastructure.authorization.sfs.pipeline;
 
-import pe.healthsync.meditrack.iam.infrastructure.authorization.sfs.model.UsernamePasswordAuthenticationTokenBuilder;
-import pe.healthsync.meditrack.iam.infrastructure.tokens.jwt.BearerTokenService;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import pe.healthsync.meditrack.iam.infrastructure.authorization.sfs.model.UsernamePasswordAuthenticationTokenBuilder;
+import pe.healthsync.meditrack.iam.infrastructure.persistence.jpa.repositories.UserRepository;
+import pe.healthsync.meditrack.iam.infrastructure.tokens.jwt.BearerTokenService;
 
 public class BearerAuthorizationRequestFilter extends OncePerRequestFilter {
+    @Autowired
+    private UserRepository userRepository;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(BearerAuthorizationRequestFilter.class);
+
     private final BearerTokenService tokenService;
+
     @Qualifier("defaultUserDetailsService")
     private final UserDetailsService userDetailsService;
 
@@ -34,9 +42,16 @@ public class BearerAuthorizationRequestFilter extends OncePerRequestFilter {
         try {
             String token = tokenService.getBearerTokenFrom(request);
             LOGGER.info("Token: {}", token);
+
             if (token != null && tokenService.validateToken(token)) {
                 String email = tokenService.getEmailFromToken(token);
                 var userDetails = userDetailsService.loadUserByUsername(email);
+
+                var user = userRepository.findByEmail(email)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                var userId = user.getId();
+                request.setAttribute("userId", userId);
+
                 SecurityContextHolder.getContext()
                         .setAuthentication(
                                 UsernamePasswordAuthenticationTokenBuilder.build(userDetails, request));

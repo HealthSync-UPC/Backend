@@ -1,8 +1,10 @@
 package pe.healthsync.meditrack.iam.domain.model.aggregates;
 
 import jakarta.persistence.Entity;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import pe.healthsync.meditrack.iam.domain.model.commands.RegisterUserCommand;
 import pe.healthsync.meditrack.iam.domain.model.commands.SignUpCommand;
 import pe.healthsync.meditrack.iam.domain.model.valueobjects.Roles;
 import pe.healthsync.meditrack.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
@@ -10,6 +12,7 @@ import pe.healthsync.meditrack.shared.domain.model.aggregates.AuditableAbstractA
 @Entity
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class User extends AuditableAbstractAggregateRoot<User> {
     private String email;
 
@@ -36,14 +39,20 @@ public class User extends AuditableAbstractAggregateRoot<User> {
         this.isTwoFactorEnabled = true;
     }
 
-    // TODO: registrar usuario normal desde admin
-    /*
-     * public User registerUser(RegisterUserCommand command) {
-     * this.email = command.email();
-     * this.password = command.password();
-     * this.organizationName = command.organizationName();
-     * this.isTwoFactorEnabled = false;
-     * this.role = Roles.USER;
-     * }
-     */
+    public User registerUser(RegisterUserCommand command) {
+        var domainEmail = this.email.split("@")[1];
+        var email = command.email() + "@" + domainEmail;
+        var organizationName = this.organizationName;
+
+        var newUser = new User(
+                email,
+                command.password(),
+                organizationName,
+                command.twoFactorSecret(),
+                false,
+                Roles.USER);
+
+        return newUser;
+    }
+
 }
