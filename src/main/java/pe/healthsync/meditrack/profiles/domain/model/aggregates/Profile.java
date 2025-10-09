@@ -14,12 +14,14 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
     private String lastName;
     private String position;
     private Long adminId;
+    private Long userId;
 
     public Profile(CreateProfileCommand command) {
         this.firstName = command.firstName();
         this.lastName = command.lastName();
         this.position = command.position();
         this.adminId = command.adminId();
+        this.userId = command.userId();
     }
 
 }

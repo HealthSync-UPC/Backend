@@ -22,8 +22,6 @@ public class ProfileCommandServiceImpl implements ProfileCommandService {
 
     @Override
     public Tuple3<Profile, String, String> handle(CreateProfileCommand command) {
-        Profile profile = new Profile(command);
-
         var createUserCommand = new RegisterUserCommand(
                 command.adminId(),
                 command.email(),
@@ -31,6 +29,17 @@ public class ProfileCommandServiceImpl implements ProfileCommandService {
                 null);
 
         var createdUser = userCommandService.handle(createUserCommand);
+
+        var createProfileCommand = new CreateProfileCommand(
+                command.firstName(),
+                command.lastName(),
+                command.position(),
+                command.adminId(),
+                createdUser.getId(),
+                command.email(),
+                command.password());
+
+        Profile profile = new Profile(createProfileCommand);
 
         var createdProfile = profileRepository.save(profile);
 

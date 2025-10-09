@@ -5,8 +5,6 @@ import java.util.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import dev.samstevens.totp.secret.SecretGenerator;
-import dev.samstevens.totp.time.SystemTimeProvider;
 import dev.samstevens.totp.code.CodeVerifier;
 import dev.samstevens.totp.code.DefaultCodeGenerator;
 import dev.samstevens.totp.code.DefaultCodeVerifier;
@@ -16,6 +14,8 @@ import dev.samstevens.totp.qr.QrData;
 import dev.samstevens.totp.qr.QrGenerator;
 import dev.samstevens.totp.qr.ZxingPngQrGenerator;
 import dev.samstevens.totp.secret.DefaultSecretGenerator;
+import dev.samstevens.totp.secret.SecretGenerator;
+import dev.samstevens.totp.time.SystemTimeProvider;
 
 @Service
 public class TOTPService {
@@ -34,9 +34,12 @@ public class TOTPService {
         return secretGenerator.generate();
     }
 
-    public String generateQrCodeImage(String organizationName, String secret) throws QrGenerationException {
+    public String generateQrCodeImage(String organizationName, String email, String secret)
+            throws QrGenerationException {
+        var label = email + " (" + organizationName + ")";
+
         QrData data = new QrData.Builder()
-                .label(organizationName)
+                .label(label)
                 .secret(secret)
                 .issuer(appName)
                 .algorithm(HashingAlgorithm.SHA1)

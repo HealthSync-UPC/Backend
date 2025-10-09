@@ -15,6 +15,7 @@ public record CreateProfileRequest(
                                 lastName,
                                 position,
                                 adminId,
+                                null,
                                 email,
                                 password);
         }

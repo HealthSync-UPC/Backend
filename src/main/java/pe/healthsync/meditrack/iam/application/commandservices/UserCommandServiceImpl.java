@@ -88,7 +88,8 @@ public class UserCommandServiceImpl implements UserCommandService {
             throw new IllegalArgumentException("Invalid credentials");
 
         try {
-            return totpService.generateQrCodeImage(user.getOrganizationName(), user.getTwoFactorSecret());
+            return totpService.generateQrCodeImage(user.getOrganizationName(), user.getEmail(),
+                    user.getTwoFactorSecret());
         } catch (Exception e) {
             throw new RuntimeException("Error generating QR", e);
         }
