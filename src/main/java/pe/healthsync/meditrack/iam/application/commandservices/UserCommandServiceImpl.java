@@ -100,6 +100,14 @@ public class UserCommandServiceImpl implements UserCommandService {
         var adminUser = userRepository.findById(command.adminId())
                 .orElseThrow(() -> new IllegalArgumentException("Admin user not found"));
 
+        var domainEmail = adminUser.getEmail().split("@")[1];
+        var localPart = command.email().split("@")[0];
+        var finalEmail = localPart + "@" + domainEmail;
+
+        if (userRepository.existsByEmail(finalEmail)) {
+            throw new IllegalArgumentException("Email already exists in this organization");
+        }
+
         var secret = totpService.generateSecret();
         var hashedPassword = hashingService.encode(command.password());
 

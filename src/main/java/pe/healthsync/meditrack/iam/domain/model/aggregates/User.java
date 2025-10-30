@@ -41,7 +41,8 @@ public class User extends AuditableAbstractAggregateRoot<User> {
 
     public User registerUser(RegisterUserCommand command) {
         var domainEmail = this.email.split("@")[1];
-        var email = command.email() + "@" + domainEmail;
+        var localPart = command.email().split("@")[0];
+        var email = localPart + "@" + domainEmail;
         var organizationName = this.organizationName;
 
         var newUser = new User(
