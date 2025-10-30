@@ -1,6 +1,8 @@
 package pe.healthsync.meditrack.iam.domain.model.aggregates;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +26,7 @@ public class User extends AuditableAbstractAggregateRoot<User> {
 
     private boolean isTwoFactorEnabled;
 
+    @Enumerated(EnumType.STRING)
     private Roles role;
 
     public User(SignUpCommand command, String twoFactorSecret) {
