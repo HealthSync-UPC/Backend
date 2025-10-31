@@ -3,13 +3,22 @@ package pe.healthsync.meditrack.devices.interfaces.rest;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import pe.healthsync.meditrack.devices.domain.model.queries.GetAllDevicesByAdminIdQuery;
 import pe.healthsync.meditrack.devices.domain.services.DeviceCommandService;
 import pe.healthsync.meditrack.devices.domain.services.DeviceQueryService;
@@ -17,13 +26,12 @@ import pe.healthsync.meditrack.devices.interfaces.rest.requests.CreateDeviceRead
 import pe.healthsync.meditrack.devices.interfaces.rest.requests.CreateDeviceRequest;
 import pe.healthsync.meditrack.devices.interfaces.rest.responses.DeviceResponse;
 import pe.healthsync.meditrack.shared.infrastructure.security.AuthenticatedUserProvider;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping(value = "/api/v1/devices", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Devices", description = "Devices Endpoints")
 public class DeviceController {
+
     @Autowired
     private DeviceCommandService deviceCommandService;
 
@@ -33,6 +41,10 @@ public class DeviceController {
     @Autowired
     private AuthenticatedUserProvider authenticatedUserProvider;
 
+    @Operation(summary = "Get all devices for the current admin", description = "Returns a list of all devices associated with the currently authenticated admin.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "List of devices retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = DeviceResponse.class))),
+    })
     @GetMapping()
     public ResponseEntity<List<DeviceResponse>> getDevices() {
         var adminId = authenticatedUserProvider.getCurrentUser().getId();
@@ -46,6 +58,10 @@ public class DeviceController {
         return ResponseEntity.ok(devicesResponse);
     }
 
+    @Operation(summary = "Create a new device", description = "Creates a new device for the currently authenticated admin.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Device created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = DeviceResponse.class))),
+    })
     @PostMapping()
     public ResponseEntity<DeviceResponse> createDevice(@RequestBody CreateDeviceRequest request) {
         var adminId = authenticatedUserProvider.getCurrentUser().getId();
@@ -55,9 +71,13 @@ public class DeviceController {
 
         var deviceResponse = DeviceResponse.fromEntity(device);
 
-        return ResponseEntity.ok(deviceResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(deviceResponse);
     }
 
+    @Operation(summary = "Create a new device reading", description = "Creates a new reading for a device.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Device reading created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = DeviceResponse.class))),
+    })
     @PostMapping("/readings")
     public ResponseEntity<DeviceResponse> createDeviceReading(@RequestBody CreateDeviceReadingRequest request) {
         var command = request.toCommand();
@@ -66,6 +86,6 @@ public class DeviceController {
 
         var deviceResponse = DeviceResponse.fromEntity(device);
 
-        return ResponseEntity.ok(deviceResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(deviceResponse);
     }
 }
