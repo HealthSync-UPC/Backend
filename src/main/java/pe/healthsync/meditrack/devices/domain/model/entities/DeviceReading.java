@@ -7,8 +7,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import pe.healthsync.meditrack.devices.domain.model.aggregates.Device;
+import pe.healthsync.meditrack.devices.domain.model.commands.CreateDeviceReadingCommand;
 import pe.healthsync.meditrack.shared.domain.model.entities.AuditableModel;
 
 @Entity
@@ -16,7 +16,6 @@ import pe.healthsync.meditrack.shared.domain.model.entities.AuditableModel;
 @NoArgsConstructor
 public class DeviceReading extends AuditableModel {
     @ManyToOne(fetch = FetchType.LAZY)
-    @Setter
     private Device device;
 
     private Instant readingAt;
@@ -24,8 +23,6 @@ public class DeviceReading extends AuditableModel {
     private String value;
 
     private Double numericValue;
-
-    private String unit;
 
     /*
      * @ElementCollection
@@ -38,4 +35,10 @@ public class DeviceReading extends AuditableModel {
      * @Column(name = "meta_value")
      * private Map<String, String> metadata = new HashMap<>();
      */
+
+    public DeviceReading(CreateDeviceReadingCommand command) {
+        this.readingAt = Instant.now();
+        this.value = command.value();
+        this.numericValue = command.numericValue();
+    }
 }

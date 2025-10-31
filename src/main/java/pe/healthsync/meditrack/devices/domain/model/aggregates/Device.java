@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import pe.healthsync.meditrack.devices.domain.model.commands.CreateDeviceCommand;
 import pe.healthsync.meditrack.devices.domain.model.entities.DeviceReading;
 import pe.healthsync.meditrack.devices.domain.model.valueobjects.DeviceType;
 import pe.healthsync.meditrack.devices.domain.model.valueobjects.StatusType;
@@ -28,7 +29,7 @@ public class Device extends AuditableAbstractAggregateRoot<Device> {
 
     private String serialNumber;
 
-    private String description;
+    private String unit;
 
     @Enumerated(EnumType.STRING)
     private DeviceType type;
@@ -40,4 +41,18 @@ public class Device extends AuditableAbstractAggregateRoot<Device> {
 
     @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
     private List<DeviceReading> readings = new ArrayList<>();
+
+    public Device(CreateDeviceCommand command) {
+        this.admin = command.admin();
+        this.name = command.name();
+        this.serialNumber = command.serialNumber();
+        this.type = command.type();
+        this.location = command.location();
+        this.status = command.status();
+        this.unit = command.unit();
+    }
+
+    public void addReading(DeviceReading reading) {
+        this.readings.add(reading);
+    }
 }
