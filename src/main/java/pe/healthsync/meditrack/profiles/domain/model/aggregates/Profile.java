@@ -24,12 +24,11 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
     @OneToOne(fetch = FetchType.LAZY)
     private User user;
 
-    public Profile(CreateProfileCommand command) {
+    public Profile(CreateProfileCommand command, User admin, User user) {
         this.firstName = command.firstName();
         this.lastName = command.lastName();
         this.position = command.position();
-        this.admin = command.admin();
-        this.user = command.user();
+        this.admin = admin;
+        this.user = user;
     }
-
 }

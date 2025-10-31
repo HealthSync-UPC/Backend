@@ -42,13 +42,13 @@ public class Device extends AuditableAbstractAggregateRoot<Device> {
     @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
     private List<DeviceReading> readings = new ArrayList<>();
 
-    public Device(CreateDeviceCommand command) {
-        this.admin = command.admin();
+    public Device(CreateDeviceCommand command, User admin, DeviceType type, StatusType status) {
+        this.admin = admin;
         this.name = command.name();
         this.serialNumber = command.serialNumber();
-        this.type = command.type();
+        this.type = type;
         this.location = command.location();
-        this.status = command.status();
+        this.status = status;
         this.unit = command.unit();
     }
 
