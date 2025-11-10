@@ -31,4 +31,8 @@ public class Profile extends AuditableAbstractAggregateRoot<Profile> {
         this.admin = admin;
         this.user = user;
     }
+
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
 }
