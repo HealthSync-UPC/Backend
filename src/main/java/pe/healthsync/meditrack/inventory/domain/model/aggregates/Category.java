@@ -3,6 +3,7 @@ package pe.healthsync.meditrack.inventory.domain.model.aggregates;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
@@ -25,7 +26,7 @@ public class Category extends AuditableAbstractAggregateRoot<Category> {
 
     private String description;
 
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Item> items = new ArrayList<>();
 
     public Category(CreateCategoryCommand command, User admin) {
@@ -36,6 +37,7 @@ public class Category extends AuditableAbstractAggregateRoot<Category> {
 
     public void addItem(Item item) {
         items.add(item);
+        item.setCategory(this);
     }
 
     public void removeItem(Item item) {

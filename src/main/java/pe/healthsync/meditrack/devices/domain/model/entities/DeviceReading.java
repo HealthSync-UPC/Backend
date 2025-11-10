@@ -20,25 +20,10 @@ public class DeviceReading extends AuditableModel {
 
     private Instant readingAt;
 
-    private String value;
-
-    private Double numericValue;
-
-    /*
-     * @ElementCollection
-     * 
-     * @CollectionTable(name = "device_readings_metadata", joinColumns
-     * = @JoinColumn(name = "reading_id"))
-     * 
-     * @MapKeyColumn(name = "meta_key")
-     * 
-     * @Column(name = "meta_value")
-     * private Map<String, String> metadata = new HashMap<>();
-     */
+    private Double value;
 
     public DeviceReading(CreateDeviceReadingCommand command) {
         this.readingAt = Instant.now();
         this.value = command.value();
-        this.numericValue = command.numericValue();
     }
 }
