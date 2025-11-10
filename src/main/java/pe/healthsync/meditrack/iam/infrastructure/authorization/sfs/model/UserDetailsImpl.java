@@ -16,6 +16,7 @@ import pe.healthsync.meditrack.iam.domain.model.aggregates.User;
 @Getter
 @EqualsAndHashCode
 public class UserDetailsImpl implements UserDetails {
+    private final User user;
     private final String username;
     @JsonIgnore
     private final String password;
@@ -25,7 +26,9 @@ public class UserDetailsImpl implements UserDetails {
     private final boolean enabled;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(String username, String password, Collection<? extends GrantedAuthority> authorities) {
+    public UserDetailsImpl(User user, String username, String password,
+            Collection<? extends GrantedAuthority> authorities) {
+        this.user = user;
         this.username = username;
         this.password = password;
         this.authorities = authorities;
@@ -38,7 +41,7 @@ public class UserDetailsImpl implements UserDetails {
     public static UserDetailsImpl build(User user) {
         var authority = new SimpleGrantedAuthority(user.getRole().name());
 
-        return new UserDetailsImpl(user.getEmail(), user.getPassword(), List.of(authority));
+        return new UserDetailsImpl(user, user.getEmail(), user.getPassword(), List.of(authority));
     }
 
 }

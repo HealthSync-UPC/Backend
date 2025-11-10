@@ -23,9 +23,15 @@ public class TOTPService {
 
     private final QrGenerator qrGenerator = new ZxingPngQrGenerator();
 
-    private final CodeVerifier verifier = new DefaultCodeVerifier(
-            new DefaultCodeGenerator(HashingAlgorithm.SHA1),
-            new SystemTimeProvider());
+    private final CodeVerifier verifier;
+
+    public TOTPService() {
+        DefaultCodeVerifier v = new DefaultCodeVerifier(
+                new DefaultCodeGenerator(HashingAlgorithm.SHA1),
+                new SystemTimeProvider());
+        v.setAllowedTimePeriodDiscrepancy(2);
+        this.verifier = v;
+    }
 
     @Value("${spring.application.name}")
     private String appName;
@@ -54,6 +60,14 @@ public class TOTPService {
     }
 
     public boolean verifyCode(String secret, String code) {
+        try {
+            var expectedCode = new DefaultCodeGenerator(HashingAlgorithm.SHA1)
+                    .generate(secret, new SystemTimeProvider().getTime() / 30);
+            System.out.println("Expected code (server): " + expectedCode);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return verifier.isValidCode(secret, code);
     }
 }

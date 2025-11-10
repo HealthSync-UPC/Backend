@@ -11,11 +11,10 @@ public record CreateProfileRequest(
 
         public CreateProfileCommand toCommand(Long adminId) {
                 return new CreateProfileCommand(
+                                adminId,
                                 firstName,
                                 lastName,
                                 position,
-                                adminId,
-                                null,
                                 email,
                                 password);
         }

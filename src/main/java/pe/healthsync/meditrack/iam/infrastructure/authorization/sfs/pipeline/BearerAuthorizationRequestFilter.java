@@ -5,10 +5,9 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -16,7 +15,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import pe.healthsync.meditrack.iam.infrastructure.authorization.sfs.model.UsernamePasswordAuthenticationTokenBuilder;
+import pe.healthsync.meditrack.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
 import pe.healthsync.meditrack.iam.infrastructure.persistence.jpa.repositories.UserRepository;
 import pe.healthsync.meditrack.iam.infrastructure.tokens.jwt.BearerTokenService;
 
@@ -28,12 +27,8 @@ public class BearerAuthorizationRequestFilter extends OncePerRequestFilter {
 
     private final BearerTokenService tokenService;
 
-    @Qualifier("defaultUserDetailsService")
-    private final UserDetailsService userDetailsService;
-
-    public BearerAuthorizationRequestFilter(BearerTokenService tokenService, UserDetailsService userDetailsService) {
+    public BearerAuthorizationRequestFilter(BearerTokenService tokenService) {
         this.tokenService = tokenService;
-        this.userDetailsService = userDetailsService;
     }
 
     @Override
@@ -43,18 +38,20 @@ public class BearerAuthorizationRequestFilter extends OncePerRequestFilter {
             String token = tokenService.getBearerTokenFrom(request);
             LOGGER.info("Token: {}", token);
 
-            if (token != null && tokenService.validateToken(token)) {
+            if (token != null &&
+                    tokenService.validateToken(token) &&
+                    SecurityContextHolder.getContext().getAuthentication() == null) {
                 String email = tokenService.getEmailFromToken(token);
-                var userDetails = userDetailsService.loadUserByUsername(email);
 
                 var user = userRepository.findByEmail(email)
                         .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-                var userId = user.getId();
-                request.setAttribute("userId", userId);
 
-                SecurityContextHolder.getContext()
-                        .setAuthentication(
-                                UsernamePasswordAuthenticationTokenBuilder.build(userDetails, request));
+                var userDetails = UserDetailsImpl.build(user);
+
+                var authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             } else {
                 LOGGER.info("Token is not valid");
             }

@@ -75,7 +75,7 @@ public class UserCommandServiceImpl implements UserCommandService {
             userRepository.save(user);
         }
 
-        return tokenService.generateToken(user.getEmail());
+        return tokenService.generateToken(user.getEmail(), user.getRole().toString());
     }
 
     @Override
@@ -99,6 +99,14 @@ public class UserCommandServiceImpl implements UserCommandService {
     public User handle(RegisterUserCommand command) {
         var adminUser = userRepository.findById(command.adminId())
                 .orElseThrow(() -> new IllegalArgumentException("Admin user not found"));
+
+        var domainEmail = adminUser.getEmail().split("@")[1];
+        var localPart = command.email().split("@")[0];
+        var finalEmail = localPart + "@" + domainEmail;
+
+        if (userRepository.existsByEmail(finalEmail)) {
+            throw new IllegalArgumentException("Email already exists in this organization");
+        }
 
         var secret = totpService.generateSecret();
         var hashedPassword = hashingService.encode(command.password());
