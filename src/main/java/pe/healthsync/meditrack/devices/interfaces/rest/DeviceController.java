@@ -48,7 +48,8 @@ public class DeviceController {
     @GetMapping()
     public ResponseEntity<List<DeviceResponse>> getDevices() {
         var user = authenticatedUserProvider.getCurrentUser();
-        var adminId = user.getAdmin().getId();
+        var adminId = user.getRole().toString().equals("ADMIN") ? user.getId() : user.getAdmin().getId();
+
         var query = new GetAllDevicesByAdminIdQuery(adminId);
         var devices = deviceQueryService.handle(query);
 

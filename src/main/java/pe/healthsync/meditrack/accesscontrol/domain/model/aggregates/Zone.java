@@ -3,6 +3,7 @@ package pe.healthsync.meditrack.accesscontrol.domain.model.aggregates;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
@@ -31,7 +32,7 @@ public class Zone extends AuditableAbstractAggregateRoot<Zone> {
     @OneToMany(fetch = FetchType.LAZY)
     private List<User> members = new ArrayList<>();
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<AccessLog> accessLogs = new ArrayList<>();
 
     public Zone(CreateZoneCommand command, User admin, Device device, List<User> members) {
