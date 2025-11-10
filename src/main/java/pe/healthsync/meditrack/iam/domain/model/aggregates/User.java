@@ -3,6 +3,8 @@ package pe.healthsync.meditrack.iam.domain.model.aggregates;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +31,9 @@ public class User extends AuditableAbstractAggregateRoot<User> {
     @Enumerated(EnumType.STRING)
     private Roles role;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    private User admin;
+
     public User(SignUpCommand command, String twoFactorSecret) {
         this.email = command.email();
         this.password = command.password();
@@ -54,7 +59,8 @@ public class User extends AuditableAbstractAggregateRoot<User> {
                 organizationName,
                 command.twoFactorSecret(),
                 false,
-                Roles.USER);
+                Roles.USER,
+                this);
 
         return newUser;
     }
