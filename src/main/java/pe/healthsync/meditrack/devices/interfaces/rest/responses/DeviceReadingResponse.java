@@ -6,14 +6,12 @@ import pe.healthsync.meditrack.devices.domain.model.entities.DeviceReading;
 
 public record DeviceReadingResponse(
         Long id,
-        String value,
-        Double numericValue,
+        Double value,
         Instant readingAt) {
     public static DeviceReadingResponse fromEntity(DeviceReading reading) {
         return new DeviceReadingResponse(
                 reading.getId(),
                 reading.getValue(),
-                reading.getNumericValue(),
                 reading.getReadingAt());
     }
 }

@@ -4,12 +4,10 @@ import pe.healthsync.meditrack.devices.domain.model.commands.CreateDeviceReading
 
 public record CreateDeviceReadingRequest(
         Long deviceId,
-        String value,
-        Double numericValue) {
+        Double value) {
     public CreateDeviceReadingCommand toCommand() {
         return new CreateDeviceReadingCommand(
                 deviceId,
-                value,
-                numericValue);
+                value);
     }
 }

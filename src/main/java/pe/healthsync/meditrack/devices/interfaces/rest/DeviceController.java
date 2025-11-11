@@ -41,13 +41,15 @@ public class DeviceController {
     @Autowired
     private AuthenticatedUserProvider authenticatedUserProvider;
 
-    @Operation(summary = "Get all devices for the current admin", description = "Returns a list of all devices associated with the currently authenticated admin.")
+    @Operation(summary = "Get all devices for the current user", description = "Returns a list of all devices associated with the current user.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "List of devices retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = DeviceResponse.class))),
     })
     @GetMapping()
     public ResponseEntity<List<DeviceResponse>> getDevices() {
-        var adminId = authenticatedUserProvider.getCurrentUser().getId();
+        var user = authenticatedUserProvider.getCurrentUser();
+        var adminId = user.getRole().toString().equals("ADMIN") ? user.getId() : user.getAdmin().getId();
+
         var query = new GetAllDevicesByAdminIdQuery(adminId);
         var devices = deviceQueryService.handle(query);
 
@@ -58,7 +60,7 @@ public class DeviceController {
         return ResponseEntity.ok(devicesResponse);
     }
 
-    @Operation(summary = "Create a new device", description = "Creates a new device for the currently authenticated admin.")
+    @Operation(summary = "Create a new device", description = "Creates a new device for the current user.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Device created successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = DeviceResponse.class))),
     })
