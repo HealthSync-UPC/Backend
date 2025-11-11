@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-
+import pe.healthsync.meditrack.devices.domain.model.commands.DeleteDeviceCommand;
 import pe.healthsync.meditrack.devices.domain.model.queries.GetAllDevicesByAdminIdQuery;
 import pe.healthsync.meditrack.devices.domain.services.DeviceCommandService;
 import pe.healthsync.meditrack.devices.domain.services.DeviceQueryService;
@@ -89,5 +91,19 @@ public class DeviceController {
         var deviceResponse = DeviceResponse.fromEntity(device);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(deviceResponse);
+    }
+
+    @Operation(summary = "Delete a device", description = "Deletes a device for the current user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Device deleted successfully"),
+    })
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDevice(@PathVariable Long id) {
+        var adminId = authenticatedUserProvider.getCurrentUser().getId();
+        var command = new DeleteDeviceCommand(adminId, id);
+
+        deviceCommandService.handle(command);
+
+        return ResponseEntity.noContent().build();
     }
 }
