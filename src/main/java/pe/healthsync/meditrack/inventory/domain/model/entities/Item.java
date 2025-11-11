@@ -5,6 +5,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import pe.healthsync.meditrack.accesscontrol.domain.model.aggregates.Zone;
 import pe.healthsync.meditrack.inventory.domain.model.commands.CreateItemCommand;
 import pe.healthsync.meditrack.shared.domain.model.entities.AuditableModel;
@@ -28,6 +29,7 @@ public class Item extends AuditableModel {
     private String location;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @Setter
     private Zone zone;
 
     public Item(CreateItemCommand command) {
