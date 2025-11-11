@@ -31,14 +31,14 @@ public class InventoryCommandServiceImpl implements InventoryCommandService {
 
     @Override
     public Item handle(CreateItemCommand command) {
-        var item = new Item(command);
-
         var category = categoryRepository.findById(command.categoryId())
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
 
-        category.addItem(item);
+        category.addItem(command);
 
         categoryRepository.save(category);
+
+        var item = category.getItems().get(category.getItems().size() - 1);
 
         return item;
     }
