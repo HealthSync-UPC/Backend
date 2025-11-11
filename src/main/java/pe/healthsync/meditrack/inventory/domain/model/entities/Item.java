@@ -5,6 +5,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import pe.healthsync.meditrack.inventory.domain.model.aggregates.Category;
 import pe.healthsync.meditrack.inventory.domain.model.commands.CreateItemCommand;
 import pe.healthsync.meditrack.shared.domain.model.entities.AuditableModel;
@@ -14,6 +15,7 @@ import pe.healthsync.meditrack.shared.domain.model.entities.AuditableModel;
 @NoArgsConstructor
 public class Item extends AuditableModel {
     @ManyToOne(fetch = FetchType.LAZY)
+    @Setter
     private Category category;
 
     private String name;

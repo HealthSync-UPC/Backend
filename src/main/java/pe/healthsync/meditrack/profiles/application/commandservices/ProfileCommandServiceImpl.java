@@ -39,6 +39,8 @@ public class ProfileCommandServiceImpl implements ProfileCommandService {
 
                 Profile profile = new Profile(command, admin, createdUser);
 
+                createdUser.setProfile(profile);
+
                 var createdProfile = profileRepository.save(profile);
 
                 var generateQrCommand = new GenerateUserQrCommand(createdUser.getEmail(), command.password());
