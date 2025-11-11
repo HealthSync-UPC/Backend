@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import pe.healthsync.meditrack.devices.domain.model.aggregates.Device;
 import pe.healthsync.meditrack.devices.domain.model.commands.CreateDeviceCommand;
 import pe.healthsync.meditrack.devices.domain.model.commands.CreateDeviceReadingCommand;
+import pe.healthsync.meditrack.devices.domain.model.commands.DeleteDeviceCommand;
 import pe.healthsync.meditrack.devices.domain.model.entities.DeviceReading;
 import pe.healthsync.meditrack.devices.domain.model.valueobjects.DeviceType;
 import pe.healthsync.meditrack.devices.domain.model.valueobjects.StatusType;
@@ -54,6 +55,18 @@ public class DeviceCommandServiceImpl implements DeviceCommandService {
         device.addReading(deviceReading);
 
         return deviceRepository.save(device);
+    }
+
+    @Override
+    public void handle(DeleteDeviceCommand command) {
+        var device = deviceRepository.findById(command.deviceId())
+                .orElseThrow(() -> new IllegalArgumentException("Device not found with id: " + command.deviceId()));
+
+        if (!device.getAdmin().getId().equals(command.adminId())) {
+            throw new IllegalArgumentException("This user does not have permission to delete this device.");
+        }
+
+        deviceRepository.delete(device);
     }
 
 }
