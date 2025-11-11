@@ -15,6 +15,7 @@ import pe.healthsync.meditrack.accesscontrol.domain.model.commands.CreateZoneCom
 import pe.healthsync.meditrack.accesscontrol.domain.model.entities.AccessLog;
 import pe.healthsync.meditrack.devices.domain.model.aggregates.Device;
 import pe.healthsync.meditrack.iam.domain.model.aggregates.User;
+import pe.healthsync.meditrack.inventory.domain.model.entities.Item;
 import pe.healthsync.meditrack.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 
 @Entity
@@ -27,7 +28,13 @@ public class Zone extends AuditableAbstractAggregateRoot<Zone> {
     private String name;
 
     @OneToOne(fetch = FetchType.LAZY)
-    private Device device;
+    private Device nfcDevice;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Device> devices = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Item> items = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<User> members = new ArrayList<>();
@@ -35,10 +42,18 @@ public class Zone extends AuditableAbstractAggregateRoot<Zone> {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<AccessLog> accessLogs = new ArrayList<>();
 
-    public Zone(CreateZoneCommand command, User admin, Device device, List<User> members) {
+    public Zone(
+            CreateZoneCommand command,
+            User admin,
+            Device nfcDevice,
+            List<Device> devices,
+            List<Item> items,
+            List<User> members) {
         this.admin = admin;
         this.name = command.name();
-        this.device = device;
+        this.nfcDevice = nfcDevice;
+        this.devices = devices;
+        this.items = items;
         this.members = members;
     }
 
@@ -54,5 +69,21 @@ public class Zone extends AuditableAbstractAggregateRoot<Zone> {
 
     public void removeMember(User user) {
         this.members.remove(user);
+    }
+
+    public void addDevice(Device device) {
+        this.devices.add(device);
+    }
+
+    public void removeDevice(Device device) {
+        this.devices.remove(device);
+    }
+
+    public void addItem(Item item) {
+        this.items.add(item);
+    }
+
+    public void removeItem(Item item) {
+        this.items.remove(item);
     }
 }
