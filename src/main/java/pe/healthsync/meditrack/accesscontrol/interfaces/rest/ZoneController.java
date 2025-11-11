@@ -27,6 +27,10 @@ import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.AccesReque
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.AddMemberRequest;
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.CreateZoneRequest;
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.RemoveMemberRequest;
+import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.AddDeviceRequest;
+import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.AddItemRequest;
+import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.RemoveDeviceRequest;
+import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.RemoveItemRequest;
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.responses.ZoneResponse;
 import pe.healthsync.meditrack.shared.infrastructure.security.AuthenticatedUserProvider;
 
@@ -125,4 +129,65 @@ public class ZoneController {
 
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         }
+
+        @Operation(summary = "Add a device to a zone", description = "Adds a device to the specified zone. Only the zone admin can perform this action.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Device added successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ZoneResponse.class)))
+        })
+        @PostMapping("/{id}/devices")
+        public ResponseEntity<ZoneResponse> addDevice(@PathVariable("id") Long zoneId,
+                        @RequestBody AddDeviceRequest request) {
+                var adminId = authenticatedUserProvider.getCurrentUser().getId();
+                var command = request.toCommand(adminId, zoneId);
+
+                var zone = zoneCommandService.handle(command);
+
+                return ResponseEntity.ok(ZoneResponse.fromEntity(zone));
+        }
+
+        @Operation(summary = "Remove a device from a zone", description = "Removes a device from the specified zone. Only the zone admin can perform this action.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Device removed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ZoneResponse.class)))
+        })
+        @DeleteMapping("/{id}/devices")
+        public ResponseEntity<ZoneResponse> removeDevice(@PathVariable("id") Long zoneId,
+                        @RequestBody RemoveDeviceRequest request) {
+                var adminId = authenticatedUserProvider.getCurrentUser().getId();
+                var command = request.toCommand(adminId, zoneId);
+
+                var zone = zoneCommandService.handle(command);
+
+                return ResponseEntity.ok(ZoneResponse.fromEntity(zone));
+        }
+
+        @Operation(summary = "Add a item to a zone", description = "Adds a item to the specified zone. Only the zone admin can perform this action.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Item added successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ZoneResponse.class)))
+        })
+        @PostMapping("/{id}/items")
+        public ResponseEntity<ZoneResponse> addItem(@PathVariable("id") Long zoneId,
+                        @RequestBody AddItemRequest request) {
+                var adminId = authenticatedUserProvider.getCurrentUser().getId();
+                var command = request.toCommand(adminId, zoneId);
+
+                var zone = zoneCommandService.handle(command);
+
+                return ResponseEntity.ok(ZoneResponse.fromEntity(zone));
+        }
+
+        @Operation(summary = "Remove a item from a zone", description = "Removes a item from the specified zone. Only the zone admin can perform this action.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Item removed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ZoneResponse.class)))
+        })
+        @DeleteMapping("/{id}/items")
+        public ResponseEntity<ZoneResponse> removeItem(@PathVariable("id") Long zoneId,
+                        @RequestBody RemoveItemRequest request) {
+                var adminId = authenticatedUserProvider.getCurrentUser().getId();
+                var command = request.toCommand(adminId, zoneId);
+
+                var zone = zoneCommandService.handle(command);
+
+                return ResponseEntity.ok(ZoneResponse.fromEntity(zone));
+        }
+
 }

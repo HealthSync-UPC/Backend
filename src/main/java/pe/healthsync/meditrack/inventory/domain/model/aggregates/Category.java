@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import pe.healthsync.meditrack.iam.domain.model.aggregates.User;
 import pe.healthsync.meditrack.inventory.domain.model.commands.CreateCategoryCommand;
+import pe.healthsync.meditrack.inventory.domain.model.commands.CreateItemCommand;
 import pe.healthsync.meditrack.inventory.domain.model.entities.Item;
 import pe.healthsync.meditrack.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 
@@ -26,7 +27,7 @@ public class Category extends AuditableAbstractAggregateRoot<Category> {
 
     private String description;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Item> items = new ArrayList<>();
 
     public Category(CreateCategoryCommand command, User admin) {
@@ -35,13 +36,12 @@ public class Category extends AuditableAbstractAggregateRoot<Category> {
         this.description = command.description();
     }
 
-    public void addItem(Item item) {
+    public void addItem(CreateItemCommand command) {
+        var item = new Item(command);
         items.add(item);
-        item.setCategory(this);
     }
 
-    public void removeItem(Item item) {
-        items.remove(item);
+    public void removeItem(Long itemId) {
+        items.removeIf(item -> item.getId().equals(itemId));
     }
-
 }
