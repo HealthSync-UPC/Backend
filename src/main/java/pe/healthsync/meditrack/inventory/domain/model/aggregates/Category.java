@@ -27,7 +27,7 @@ public class Category extends AuditableAbstractAggregateRoot<Category> {
 
     private String description;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Item> items = new ArrayList<>();
 
     public Category(CreateCategoryCommand command, User admin) {
@@ -39,11 +39,9 @@ public class Category extends AuditableAbstractAggregateRoot<Category> {
     public void addItem(CreateItemCommand command) {
         var item = new Item(command);
         items.add(item);
-        item.setCategory(this);
     }
 
-    public void removeItem(Item item) {
-        items.remove(item);
+    public void removeItem(Long itemId) {
+        items.removeIf(item -> item.getId().equals(itemId));
     }
-
 }
