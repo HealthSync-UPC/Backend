@@ -6,6 +6,7 @@ import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -30,13 +31,13 @@ public class Zone extends AuditableAbstractAggregateRoot<Zone> {
     @OneToOne(fetch = FetchType.LAZY)
     private Device nfcDevice;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Device> devices = new ArrayList<>();
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "zone", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Item> items = new ArrayList<>();
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<User> members = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -81,9 +82,11 @@ public class Zone extends AuditableAbstractAggregateRoot<Zone> {
 
     public void addItem(Item item) {
         this.items.add(item);
+        item.setZone(this);
     }
 
     public void removeItem(Item item) {
         this.items.remove(item);
+        item.setZone(null);
     }
 }

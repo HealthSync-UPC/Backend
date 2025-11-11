@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +20,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-
+import pe.healthsync.meditrack.inventory.domain.model.commands.DeleteCategoryCommand;
+import pe.healthsync.meditrack.inventory.domain.model.commands.DeleteItemCommand;
 import pe.healthsync.meditrack.inventory.domain.model.queries.GetAllCategoriesByAdminIdQuery;
 import pe.healthsync.meditrack.inventory.domain.model.queries.GetAllItemsByAdminIdQuery;
 import pe.healthsync.meditrack.inventory.domain.services.InventoryCommandService;
@@ -106,5 +109,35 @@ public class InventoryController {
                 var response = ItemResponse.fromEntity(item);
 
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        }
+
+        @Operation(summary = "Delete a category", description = "Deletes a category by its ID.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "204", description = "Category deleted successfully"),
+                        @ApiResponse(responseCode = "404", description = "Category not found")
+        })
+        @DeleteMapping("/categories/{id}")
+        public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+                var admin = authenticatedUserProvider.getCurrentUser();
+                var command = new DeleteCategoryCommand(admin.getId(), id);
+
+                inventoryCommandService.handle(command);
+
+                return ResponseEntity.noContent().build();
+        }
+
+        @Operation(summary = "Delete an item", description = "Deletes an item by its ID.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "204", description = "Item deleted successfully"),
+                        @ApiResponse(responseCode = "404", description = "Item not found")
+        })
+        @DeleteMapping("/items/{id}")
+        public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
+                var admin = authenticatedUserProvider.getCurrentUser();
+                var command = new DeleteItemCommand(admin.getId(), id);
+
+                inventoryCommandService.handle(command);
+
+                return ResponseEntity.noContent().build();
         }
 }
