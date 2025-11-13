@@ -7,6 +7,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import pe.healthsync.meditrack.devices.domain.model.aggregates.Device;
 import pe.healthsync.meditrack.devices.domain.model.commands.CreateDeviceReadingCommand;
 import pe.healthsync.meditrack.shared.domain.model.entities.AuditableModel;
@@ -16,6 +17,7 @@ import pe.healthsync.meditrack.shared.domain.model.entities.AuditableModel;
 @NoArgsConstructor
 public class DeviceReading extends AuditableModel {
     @ManyToOne(fetch = FetchType.LAZY)
+    @Setter
     private Device device;
 
     private Instant readingAt;
