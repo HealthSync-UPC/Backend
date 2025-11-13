@@ -1,15 +1,20 @@
 package pe.healthsync.meditrack.iam.domain.model.aggregates;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pe.healthsync.meditrack.accesscontrol.domain.model.aggregates.Zone;
 import pe.healthsync.meditrack.iam.domain.model.commands.RegisterUserCommand;
 import pe.healthsync.meditrack.iam.domain.model.commands.SignUpCommand;
 import pe.healthsync.meditrack.iam.domain.model.valueobjects.Roles;
@@ -41,6 +46,9 @@ public class User extends AuditableAbstractAggregateRoot<User> {
     @Setter
     private Profile profile;
 
+    @ManyToMany(mappedBy = "members", fetch = FetchType.LAZY)
+    private List<Zone> zones = new ArrayList<>();
+
     public User(SignUpCommand command, String twoFactorSecret) {
         this.email = command.email();
         this.password = command.password();
@@ -68,7 +76,8 @@ public class User extends AuditableAbstractAggregateRoot<User> {
                 false,
                 Roles.USER,
                 this,
-                null);
+                null,
+                new ArrayList<>());
 
         return newUser;
     }
