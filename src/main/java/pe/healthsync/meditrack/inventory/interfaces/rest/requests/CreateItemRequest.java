@@ -1,5 +1,6 @@
 package pe.healthsync.meditrack.inventory.interfaces.rest.requests;
 
+import java.time.LocalDate;
 import pe.healthsync.meditrack.inventory.domain.model.commands.CreateItemCommand;
 
 public record CreateItemRequest(
@@ -9,7 +10,8 @@ public record CreateItemRequest(
         String description,
         int quantity,
         String unit,
-        String location) {
+        String location,
+        LocalDate expirationDate) {
 
     public CreateItemCommand toCommand() {
         return new CreateItemCommand(
@@ -19,6 +21,7 @@ public record CreateItemRequest(
                 description,
                 quantity,
                 unit,
-                location);
+                location,
+                expirationDate);
     }
 }
