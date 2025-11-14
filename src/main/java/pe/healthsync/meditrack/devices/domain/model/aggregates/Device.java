@@ -3,6 +3,7 @@ package pe.healthsync.meditrack.devices.domain.model.aggregates;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -39,7 +40,7 @@ public class Device extends AuditableAbstractAggregateRoot<Device> {
     @Enumerated(EnumType.STRING)
     private StatusType status;
 
-    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "device", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<DeviceReading> readings = new ArrayList<>();
 
     public Device(CreateDeviceCommand command, User admin, DeviceType type, StatusType status) {
@@ -54,5 +55,6 @@ public class Device extends AuditableAbstractAggregateRoot<Device> {
 
     public void addReading(DeviceReading reading) {
         this.readings.add(reading);
+        reading.setDevice(this);
     }
 }
