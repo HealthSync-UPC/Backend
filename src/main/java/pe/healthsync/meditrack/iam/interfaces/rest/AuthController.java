@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import pe.healthsync.meditrack.iam.domain.model.commands.GenerateUserQrCommand;
 import pe.healthsync.meditrack.iam.domain.services.UserCommandService;
+import pe.healthsync.meditrack.iam.application.outboundservices.tokens.TokenService;
+import pe.healthsync.meditrack.iam.infrastructure.persistence.jpa.repositories.UserRepository;
 import pe.healthsync.meditrack.iam.interfaces.rest.requests.GenerateQrRequest;
 import pe.healthsync.meditrack.iam.interfaces.rest.requests.SignInRequest;
 import pe.healthsync.meditrack.iam.interfaces.rest.requests.SignUpRequest;
@@ -16,6 +18,7 @@ import pe.healthsync.meditrack.iam.interfaces.rest.responses.GenerateQrResponse;
 import pe.healthsync.meditrack.iam.interfaces.rest.responses.TokenResponse;
 import pe.healthsync.meditrack.iam.interfaces.rest.responses.SignUpResponse;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -32,17 +35,36 @@ public class AuthController {
     @Autowired
     private UserCommandService userCommandService;
 
+    @Autowired
+    private TokenService tokenService;
+
+    @Autowired
+    private UserRepository userRepository;
+
     @Operation(summary = "Register a new user", description = "Creates a new user and returns a QR code for 2FA setup.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "User created", content = @Content(schema = @Schema(implementation = SignUpResponse.class)))
     })
     @PostMapping("/sign-up")
-    public ResponseEntity<SignUpResponse> signUp(@RequestBody SignUpRequest req) {
+    public ResponseEntity<SignUpResponse> signUp(@RequestBody SignUpRequest req, HttpServletRequest request) {
         var command = req.toCommand();
         var user = userCommandService.handle(command);
-        var qrCode = userCommandService.handle(new GenerateUserQrCommand(user.getEmail(), req.password()));
-        var registerResponse = new SignUpResponse(qrCode);
-        return new ResponseEntity<>(registerResponse, HttpStatus.CREATED);
+        
+        String platform = request.getHeader("X-Platform");
+        boolean isMobile = "mobile".equalsIgnoreCase(platform);
+        
+        if (isMobile) {
+            // Mobile: Auto-activar 2FA sin QR
+            user.enableTwoFactor();
+            userRepository.save(user);
+            var registerResponse = new SignUpResponse(null);
+            return new ResponseEntity<>(registerResponse, HttpStatus.CREATED);
+        } else {
+            // Web: Flujo normal con QR
+            var qrCode = userCommandService.handle(new GenerateUserQrCommand(user.getEmail(), req.password()));
+            var registerResponse = new SignUpResponse(qrCode);
+            return new ResponseEntity<>(registerResponse, HttpStatus.CREATED);
+        }
     }
 
     @Operation(summary = "Generate QR for user", description = "Generates or regenerates a QR code for a user's 2FA registration.")
@@ -74,16 +96,26 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "2FA enabled", content = @Content(schema = @Schema(implementation = Void.class)))
     })
     @PostMapping("/sign-in")
-    public ResponseEntity<?> signIn(@RequestBody SignInRequest req) {
+    public ResponseEntity<?> signIn(@RequestBody SignInRequest req, HttpServletRequest request) {
         var command = req.toCommand();
         var user = userCommandService.handle(command);
-
-        if (!user.isTwoFactorEnabled()) {
-            var qrCode = userCommandService.handle(new GenerateUserQrCommand(user.getEmail(), user.getPassword()));
-            var response = new GenerateQrResponse(qrCode);
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        
+        String platform = request.getHeader("X-Platform");
+        boolean isMobile = "mobile".equalsIgnoreCase(platform);
+        
+        if (isMobile) {
+            // Mobile: Retornar JWT directamente
+            var token = tokenService.generateToken(user.getEmail(), user.getRole().toString());
+            var response = new TokenResponse(token);
+            return ResponseEntity.ok(response);
+        } else {
+            // Web: Flujo normal con 2FA
+            if (!user.isTwoFactorEnabled()) {
+                var qrCode = userCommandService.handle(new GenerateUserQrCommand(user.getEmail(), user.getPassword()));
+                var response = new GenerateQrResponse(qrCode);
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+            }
+            return ResponseEntity.ok(null);
         }
-
-        return ResponseEntity.ok(null);
     }
 }
