@@ -1,5 +1,6 @@
 package pe.healthsync.meditrack.inventory.domain.model.entities;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
@@ -7,13 +8,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import pe.healthsync.meditrack.accesscontrol.domain.model.aggregates.Zone;
+import pe.healthsync.meditrack.inventory.domain.model.aggregates.Category;
 import pe.healthsync.meditrack.inventory.domain.model.commands.CreateItemCommand;
 import pe.healthsync.meditrack.shared.domain.model.entities.AuditableModel;
+import java.time.LocalDate;
 
 @Entity
 @Getter
 @NoArgsConstructor
 public class Item extends AuditableModel {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Setter
+    private Category category;
+
     private String name;
 
     private String code;
@@ -28,6 +35,9 @@ public class Item extends AuditableModel {
 
     private String location;
 
+    @Column(nullable = true)
+    private LocalDate expirationDate;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @Setter
     private Zone zone;
@@ -39,5 +49,6 @@ public class Item extends AuditableModel {
         this.quantity = command.quantity();
         this.unit = command.unit();
         this.location = command.location();
+        this.expirationDate = command.expirationDate();
     }
 }
