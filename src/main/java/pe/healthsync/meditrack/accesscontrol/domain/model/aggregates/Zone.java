@@ -31,7 +31,7 @@ public class Zone extends AuditableAbstractAggregateRoot<Zone> {
     @OneToOne(fetch = FetchType.LAZY)
     private Device nfcDevice;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "zone", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Device> devices = new ArrayList<>();
 
     @OneToMany(mappedBy = "zone", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -59,7 +59,7 @@ public class Zone extends AuditableAbstractAggregateRoot<Zone> {
     }
 
     public void addAccessLog(User user) {
-        boolean accessGranted = members.stream().anyMatch(member -> member.equals(user));
+        boolean accessGranted = members.stream().anyMatch(member -> member.equals(user)) || admin.equals(user);
         AccessLog accessLog = new AccessLog(user, accessGranted);
         this.accessLogs.add(accessLog);
     }

@@ -5,7 +5,6 @@ public record CreateDeviceCommand(
                 String name,
                 String serialNumber,
                 String type,
-                String location,
                 String status,
                 String unit) {
 
