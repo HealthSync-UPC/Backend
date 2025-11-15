@@ -31,7 +31,7 @@ public class Zone extends AuditableAbstractAggregateRoot<Zone> {
     @OneToOne(fetch = FetchType.LAZY)
     private Device nfcDevice;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "zone", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Device> devices = new ArrayList<>();
 
     @OneToMany(mappedBy = "zone", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

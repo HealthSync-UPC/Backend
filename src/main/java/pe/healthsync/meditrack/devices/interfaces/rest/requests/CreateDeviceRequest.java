@@ -6,7 +6,7 @@ public record CreateDeviceRequest(
         String name,
         String serialNumber,
         String type,
-        String location,
+        Long locationId,
         String status,
         String unit) {
     public CreateDeviceCommand toCommand(Long adminId) {
@@ -15,7 +15,7 @@ public record CreateDeviceRequest(
                 name,
                 serialNumber,
                 type,
-                location,
+                locationId,
                 status,
                 unit);
     }
