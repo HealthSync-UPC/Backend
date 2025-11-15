@@ -24,7 +24,7 @@ public record DeviceResponse(
                                 device.getSerialNumber(),
                                 device.getUnit(),
                                 device.getType().name(),
-                                device.getZone().getName(),
+                                device.getZone() != null ? device.getZone().getName() : "Unassigned",
                                 device.getStatus().name(),
                                 readings);
         }

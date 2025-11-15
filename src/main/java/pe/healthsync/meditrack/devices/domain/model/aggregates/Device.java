@@ -36,7 +36,7 @@ public class Device extends AuditableAbstractAggregateRoot<Device> {
     @Enumerated(EnumType.STRING)
     private DeviceType type;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     private Zone zone;
 
     @Enumerated(EnumType.STRING)
@@ -45,12 +45,11 @@ public class Device extends AuditableAbstractAggregateRoot<Device> {
     @OneToMany(mappedBy = "device", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<DeviceReading> readings = new ArrayList<>();
 
-    public Device(CreateDeviceCommand command, User admin, DeviceType type, StatusType status, Zone zone) {
+    public Device(CreateDeviceCommand command, User admin, DeviceType type, StatusType status) {
         this.admin = admin;
         this.name = command.name();
         this.serialNumber = command.serialNumber();
         this.type = type;
-        this.zone = zone;
         this.status = status;
         this.unit = command.unit();
     }

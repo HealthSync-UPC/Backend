@@ -20,17 +20,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import pe.healthsync.meditrack.accesscontrol.domain.model.commands.RemoveDeviceCommand;
+import pe.healthsync.meditrack.accesscontrol.domain.model.commands.RemoveItemCommand;
+import pe.healthsync.meditrack.accesscontrol.domain.model.commands.RemoveMemberCommand;
 import pe.healthsync.meditrack.accesscontrol.domain.model.queries.GetAllZonesByAdminIdQuery;
 import pe.healthsync.meditrack.accesscontrol.domain.services.ZoneCommandService;
 import pe.healthsync.meditrack.accesscontrol.domain.services.ZoneQueryService;
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.AccesRequest;
-import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.AddMemberRequest;
-import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.CreateZoneRequest;
-import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.RemoveMemberRequest;
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.AddDeviceRequest;
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.AddItemRequest;
-import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.RemoveDeviceRequest;
-import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.RemoveItemRequest;
+import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.AddMemberRequest;
+import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.CreateZoneRequest;
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.responses.ZoneResponse;
 import pe.healthsync.meditrack.shared.infrastructure.security.AuthenticatedUserProvider;
 
@@ -98,11 +98,11 @@ public class ZoneController {
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Member removed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ZoneResponse.class)))
         })
-        @DeleteMapping("/{id}/members")
+        @DeleteMapping("/{id}/members/{memberId}")
         public ResponseEntity<ZoneResponse> removeMember(@PathVariable("id") Long zoneId,
-                        @RequestBody RemoveMemberRequest request) {
+                        @PathVariable("memberId") Long memberId) {
                 var adminId = authenticatedUserProvider.getCurrentUser().getId();
-                var command = request.toCommand(adminId, zoneId);
+                var command = new RemoveMemberCommand(adminId, zoneId, memberId);
 
                 var zone = zoneCommandService.handle(command);
 
@@ -149,12 +149,11 @@ public class ZoneController {
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Device removed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ZoneResponse.class)))
         })
-        @DeleteMapping("/{id}/devices")
+        @DeleteMapping("/{id}/devices/{deviceId}")
         public ResponseEntity<ZoneResponse> removeDevice(@PathVariable("id") Long zoneId,
-                        @RequestBody RemoveDeviceRequest request) {
+                        @PathVariable("deviceId") Long deviceId) {
                 var adminId = authenticatedUserProvider.getCurrentUser().getId();
-                var command = request.toCommand(adminId, zoneId);
-
+                var command = new RemoveDeviceCommand(adminId, zoneId, deviceId);
                 var zone = zoneCommandService.handle(command);
 
                 return ResponseEntity.ok(ZoneResponse.fromEntity(zone));
@@ -179,12 +178,11 @@ public class ZoneController {
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Item removed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ZoneResponse.class)))
         })
-        @DeleteMapping("/{id}/items")
+        @DeleteMapping("/{id}/items/{itemId}")
         public ResponseEntity<ZoneResponse> removeItem(@PathVariable("id") Long zoneId,
-                        @RequestBody RemoveItemRequest request) {
+                        @PathVariable("itemId") Long itemId) {
                 var adminId = authenticatedUserProvider.getCurrentUser().getId();
-                var command = request.toCommand(adminId, zoneId);
-
+                var command = new RemoveItemCommand(adminId, zoneId, itemId);
                 var zone = zoneCommandService.handle(command);
 
                 return ResponseEntity.ok(ZoneResponse.fromEntity(zone));
