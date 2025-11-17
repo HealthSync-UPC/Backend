@@ -25,7 +25,7 @@ public record ItemResponse(
                 item.getQuantity(),
                 item.getUnit(),
                 item.isActive(),
-                item.getLocation(),
+                item.getZone().getName(),
                 item.getExpirationDate());
     }
 }
