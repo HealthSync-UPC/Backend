@@ -24,6 +24,7 @@ import pe.healthsync.meditrack.accesscontrol.domain.model.commands.RemoveDeviceC
 import pe.healthsync.meditrack.accesscontrol.domain.model.commands.RemoveItemCommand;
 import pe.healthsync.meditrack.accesscontrol.domain.model.commands.RemoveMemberCommand;
 import pe.healthsync.meditrack.accesscontrol.domain.model.queries.GetAllZonesByAdminIdQuery;
+import pe.healthsync.meditrack.accesscontrol.domain.model.queries.GetZoneByIdQuery;
 import pe.healthsync.meditrack.accesscontrol.domain.services.ZoneCommandService;
 import pe.healthsync.meditrack.accesscontrol.domain.services.ZoneQueryService;
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.AccesRequest;
@@ -47,6 +48,22 @@ public class ZoneController {
 
         @Autowired
         private AuthenticatedUserProvider authenticatedUserProvider;
+
+        @Operation(summary = "Get zone by ID", description = "Returns a zone belonging to the currently authenticated user.")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Zone retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ZoneResponse.class))),
+                        @ApiResponse(responseCode = "404", description = "Zone not found"),
+        })
+        @GetMapping("/{id}")
+        public ResponseEntity<ZoneResponse> getZoneById(@PathVariable Long id) {
+                var adminId = authenticatedUserProvider.getCurrentUser().getId();
+                var query = new GetZoneByIdQuery(adminId, id);
+                var zone = zoneQueryService.handle(query);
+
+                var response = ZoneResponse.fromEntity(zone);
+
+                return ResponseEntity.ok(response);
+        }
 
         @Operation(summary = "Get all zones for the current user", description = "Returns a list of all zones belonging to the currently authenticated user.")
         @ApiResponses(value = {
