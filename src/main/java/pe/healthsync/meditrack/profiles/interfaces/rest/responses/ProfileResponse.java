@@ -3,6 +3,7 @@ package pe.healthsync.meditrack.profiles.interfaces.rest.responses;
 import pe.healthsync.meditrack.profiles.domain.model.aggregates.Profile;
 
 public record ProfileResponse(
+    Long id,
         String firstName,
         String lastName,
         String position,
@@ -11,6 +12,7 @@ public record ProfileResponse(
 
     public static ProfileResponse fromEntity(Profile profile, String email, String qr) {
         return new ProfileResponse(
+                profile.getUser().getId(),
                 profile.getFirstName(),
                 profile.getLastName(),
                 profile.getPosition(),

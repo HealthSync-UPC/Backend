@@ -3,12 +3,14 @@ package pe.healthsync.meditrack.accesscontrol.interfaces.rest.responses;
 import java.util.List;
 
 import pe.healthsync.meditrack.accesscontrol.domain.model.aggregates.Zone;
+import pe.healthsync.meditrack.devices.domain.model.valueobjects.DeviceType;
 import pe.healthsync.meditrack.devices.interfaces.rest.responses.DeviceResponse;
 import pe.healthsync.meditrack.inventory.interfaces.rest.responses.ItemResponse;
 
 public record ZoneResponse(
                 Long id,
                 String name,
+                DeviceResponse nfcDevice,
                 List<DeviceResponse> devices,
                 List<ItemResponse> items,
                 List<MemberResponse> members,
@@ -18,7 +20,10 @@ public record ZoneResponse(
                                 .map(MemberResponse::fromEntity)
                                 .toList();
 
+                DeviceResponse nfDeviceResponse = DeviceResponse.fromEntity(zone.getNfcDevice());
+
                 List<DeviceResponse> deviceResponses = zone.getDevices().stream()
+                                .filter(d -> d.getType() != DeviceType.ACCESS_NFC)
                                 .map(DeviceResponse::fromEntity)
                                 .toList();
 
@@ -33,6 +38,7 @@ public record ZoneResponse(
                 return new ZoneResponse(
                                 zone.getId(),
                                 zone.getName(),
+                                nfDeviceResponse,
                                 deviceResponses,
                                 itemResponses,
                                 memberResponses,

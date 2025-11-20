@@ -53,8 +53,11 @@ public class Zone extends AuditableAbstractAggregateRoot<Zone> {
         this.admin = admin;
         this.name = command.name();
         this.nfcDevice = nfcDevice;
+        nfcDevice.setZone(this);
         this.devices = devices;
+        devices.forEach(d -> d.setZone(this));
         this.items = items;
+        items.forEach(i -> i.setZone(this));
         this.members = members;
     }
 
@@ -74,10 +77,12 @@ public class Zone extends AuditableAbstractAggregateRoot<Zone> {
 
     public void addDevice(Device device) {
         this.devices.add(device);
+        device.setZone(this);
     }
 
     public void removeDevice(Device device) {
         this.devices.remove(device);
+        device.setZone(null);
     }
 
     public void addItem(Item item) {
