@@ -57,6 +57,7 @@ public class Zone extends AuditableAbstractAggregateRoot<Zone> {
         this.devices = devices;
         devices.forEach(d -> d.setZone(this));
         this.items = items;
+        items.forEach(i -> i.setZone(this));
         this.members = members;
     }
 
