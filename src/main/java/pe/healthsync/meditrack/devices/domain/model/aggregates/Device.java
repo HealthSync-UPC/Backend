@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import pe.healthsync.meditrack.accesscontrol.domain.model.aggregates.Zone;
 import pe.healthsync.meditrack.devices.domain.model.commands.CreateDeviceCommand;
 import pe.healthsync.meditrack.devices.domain.model.entities.DeviceReading;
@@ -37,6 +38,7 @@ public class Device extends AuditableAbstractAggregateRoot<Device> {
     private DeviceType type;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @Setter
     private Zone zone;
 
     @Enumerated(EnumType.STRING)

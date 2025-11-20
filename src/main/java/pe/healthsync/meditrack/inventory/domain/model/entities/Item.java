@@ -33,7 +33,7 @@ public class Item extends AuditableModel {
 
     private boolean active = true;
 
-    private String location;
+    /* private String location; */
 
     @Column(nullable = true)
     private LocalDate expirationDate;
@@ -48,7 +48,7 @@ public class Item extends AuditableModel {
         this.description = command.description();
         this.quantity = command.quantity();
         this.unit = command.unit();
-        this.location = command.location();
+        /* this.location = command.location(); */
         this.expirationDate = command.expirationDate();
     }
 }
