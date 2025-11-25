@@ -14,6 +14,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import pe.healthsync.meditrack.accesscontrol.domain.model.aggregates.Zone;
+import pe.healthsync.meditrack.accesscontrol.domain.model.entities.Alert;
+import pe.healthsync.meditrack.accesscontrol.domain.model.valueobjects.AlertType;
 import pe.healthsync.meditrack.devices.domain.model.commands.CreateDeviceCommand;
 import pe.healthsync.meditrack.devices.domain.model.entities.DeviceReading;
 import pe.healthsync.meditrack.devices.domain.model.valueobjects.DeviceType;
@@ -56,8 +58,32 @@ public class Device extends AuditableAbstractAggregateRoot<Device> {
         this.unit = command.unit();
     }
 
-    public void addReading(DeviceReading reading) {
+    public Alert addReading(DeviceReading reading) {
         this.readings.add(reading);
         reading.setDevice(this);
+
+        if (zone == null) {
+            return null;
+        }
+
+        if (this.type == DeviceType.TEMPERATURE) {
+            if (reading.getValue() < this.zone.getMinTemperature()) {
+                var alert = new Alert(this.zone, AlertType.LOW_TEMPERATURE);
+                return this.zone.raiseAlert(alert);
+            } else if (reading.getValue() > this.zone.getMaxTemperature()) {
+                var alert = new Alert(this.zone, AlertType.HIGH_TEMPERATURE);
+                return this.zone.raiseAlert(alert);
+            }
+        } else if (this.type == DeviceType.HUMIDITY) {
+            if (reading.getValue() < this.zone.getMinHumidity()) {
+                var alert = new Alert(this.zone, AlertType.LOW_HUMIDITY);
+                return this.zone.raiseAlert(alert);
+            } else if (reading.getValue() > this.zone.getMaxHumidity()) {
+                var alert = new Alert(this.zone, AlertType.HIGH_HUMIDITY);
+                return this.zone.raiseAlert(alert);
+            }
+        }
+
+        return null;
     }
 }

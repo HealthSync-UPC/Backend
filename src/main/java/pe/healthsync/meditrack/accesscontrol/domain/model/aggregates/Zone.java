@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import pe.healthsync.meditrack.accesscontrol.domain.model.commands.CreateZoneCommand;
 import pe.healthsync.meditrack.accesscontrol.domain.model.entities.AccessLog;
+import pe.healthsync.meditrack.accesscontrol.domain.model.entities.Alert;
 import pe.healthsync.meditrack.devices.domain.model.aggregates.Device;
 import pe.healthsync.meditrack.iam.domain.model.aggregates.User;
 import pe.healthsync.meditrack.inventory.domain.model.entities.Item;
@@ -42,6 +43,14 @@ public class Zone extends AuditableAbstractAggregateRoot<Zone> {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<AccessLog> accessLogs = new ArrayList<>();
+
+    private Double minTemperature = 0.0;
+    private Double maxTemperature = 0.0;
+    private Double minHumidity = 0.0;
+    private Double maxHumidity = 0.0;
+
+    @OneToMany(mappedBy = "zone", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Alert> alerts = new ArrayList<>();
 
     public Zone(
             CreateZoneCommand command,
@@ -93,5 +102,10 @@ public class Zone extends AuditableAbstractAggregateRoot<Zone> {
     public void removeItem(Item item) {
         this.items.remove(item);
         item.setZone(null);
+    }
+
+    public Alert raiseAlert(Alert alert) {
+        this.alerts.add(alert);
+        return alert;
     }
 }

@@ -14,7 +14,11 @@ public record ZoneResponse(
                 List<DeviceResponse> devices,
                 List<ItemResponse> items,
                 List<MemberResponse> members,
-                List<AccessLogResponse> accessLogs) {
+                List<AccessLogResponse> accessLogs,
+                Double minTemperature,
+                Double maxTemperature,
+                Double minHumidity,
+                Double maxHumidity) {
         public static ZoneResponse fromEntity(Zone zone) {
                 List<MemberResponse> memberResponses = zone.getMembers().stream()
                                 .map(MemberResponse::fromEntity)
@@ -42,6 +46,10 @@ public record ZoneResponse(
                                 deviceResponses,
                                 itemResponses,
                                 memberResponses,
-                                accessLogResponses);
+                                accessLogResponses,
+                                zone.getMinTemperature(),
+                                zone.getMaxTemperature(),
+                                zone.getMinHumidity(),
+                                zone.getMaxHumidity());
         }
 }

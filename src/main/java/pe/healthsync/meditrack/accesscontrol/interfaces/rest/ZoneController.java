@@ -33,6 +33,7 @@ import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.AddItemReq
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.AddMemberRequest;
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.CreateZoneRequest;
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.responses.ZoneResponse;
+import pe.healthsync.meditrack.accesscontrol.interfaces.rest.responses.AlertResponse;
 import pe.healthsync.meditrack.shared.infrastructure.security.AuthenticatedUserProvider;
 
 @RestController
@@ -203,6 +204,42 @@ public class ZoneController {
                 var zone = zoneCommandService.handle(command);
 
                 return ResponseEntity.ok(ZoneResponse.fromEntity(zone));
+        }
+
+        @Operation(summary = "Get all alerts for current user", description = "Returns a list of all alerts for zones belonging to the currently authenticated user.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Alerts retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AlertResponse.class)))
+        })
+        @GetMapping("/alerts")
+        public ResponseEntity<java.util.List<AlertResponse>> getAlerts() {
+                var adminId = authenticatedUserProvider.getCurrentUser().getId();
+                var query = new GetAllZonesByAdminIdQuery(adminId);
+                var zones = zoneQueryService.handle(query);
+
+                var alerts = zones.stream()
+                                .flatMap(z -> z.getAlerts().stream())
+                                .map(AlertResponse::fromEntity)
+                                .toList();
+
+                return ResponseEntity.ok(alerts);
+        }
+
+        @Operation(summary = "Get all alerts for a specific zone", description = "Returns a list of alerts for the specified zone belonging to the currently authenticated user.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Alerts retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AlertResponse.class))),
+                        @ApiResponse(responseCode = "404", description = "Zone not found")
+        })
+        @GetMapping("/{id}/alerts")
+        public ResponseEntity<java.util.List<AlertResponse>> getAlertsByZoneId(@PathVariable("id") Long zoneId) {
+                var adminId = authenticatedUserProvider.getCurrentUser().getId();
+                var query = new GetZoneByIdQuery(adminId, zoneId);
+                var zone = zoneQueryService.handle(query);
+
+                var alerts = zone.getAlerts().stream()
+                                .map(AlertResponse::fromEntity)
+                                .toList();
+
+                return ResponseEntity.ok(alerts);
         }
 
 }

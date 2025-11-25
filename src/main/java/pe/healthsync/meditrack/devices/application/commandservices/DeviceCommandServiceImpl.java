@@ -3,6 +3,7 @@ package pe.healthsync.meditrack.devices.application.commandservices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import pe.healthsync.meditrack.accesscontrol.infrastructure.persistence.jpa.respositories.ZoneRepository;
 import pe.healthsync.meditrack.devices.domain.model.aggregates.Device;
 import pe.healthsync.meditrack.devices.domain.model.commands.CreateDeviceCommand;
 import pe.healthsync.meditrack.devices.domain.model.commands.CreateDeviceReadingCommand;
@@ -22,6 +23,9 @@ public class DeviceCommandServiceImpl implements DeviceCommandService {
 
     @Autowired
     private UserQueryService userQueryService;
+
+    @Autowired
+    private ZoneRepository zoneRepository;
 
     @Override
     public Device handle(CreateDeviceCommand command) {
@@ -52,7 +56,11 @@ public class DeviceCommandServiceImpl implements DeviceCommandService {
                 .orElseThrow(() -> new IllegalArgumentException("Device not found with id: " + command.deviceId()));
 
         var deviceReading = new DeviceReading(command);
-        device.addReading(deviceReading);
+
+        var alert = device.addReading(deviceReading);
+
+        if (alert != null)
+            zoneRepository.save(device.getZone());
 
         return deviceRepository.save(device);
     }

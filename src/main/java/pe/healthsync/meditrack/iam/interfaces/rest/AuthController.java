@@ -49,10 +49,10 @@ public class AuthController {
     public ResponseEntity<SignUpResponse> signUp(@RequestBody SignUpRequest req, HttpServletRequest request) {
         var command = req.toCommand();
         var user = userCommandService.handle(command);
-        
+
         String platform = request.getHeader("X-Platform");
         boolean isMobile = "mobile".equalsIgnoreCase(platform);
-        
+
         if (isMobile) {
             // Mobile: Auto-activar 2FA sin QR
             user.enableTwoFactor();
@@ -99,12 +99,13 @@ public class AuthController {
     public ResponseEntity<?> signIn(@RequestBody SignInRequest req, HttpServletRequest request) {
         var command = req.toCommand();
         var user = userCommandService.handle(command);
-        
+
         String platform = request.getHeader("X-Platform");
         boolean isMobile = "mobile".equalsIgnoreCase(platform);
-        
-        if (isMobile) {
-            // Mobile: Retornar JWT directamente
+        boolean isEdge = "edge".equalsIgnoreCase(platform);
+
+        if (isMobile || isEdge) {
+            // Mobile / Edge: Retornar JWT directamente
             var token = tokenService.generateToken(user.getEmail(), user.getRole().toString());
             var response = new TokenResponse(token);
             return ResponseEntity.ok(response);
