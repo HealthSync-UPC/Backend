@@ -10,7 +10,6 @@ public record CreateItemRequest(
         String description,
         int quantity,
         String unit,
-        String location,
         LocalDate expirationDate) {
 
     public CreateItemCommand toCommand() {
@@ -21,7 +20,6 @@ public record CreateItemRequest(
                 description,
                 quantity,
                 unit,
-                location,
                 expirationDate);
     }
 }
