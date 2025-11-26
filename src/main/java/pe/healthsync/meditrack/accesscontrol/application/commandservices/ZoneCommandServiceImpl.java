@@ -12,6 +12,8 @@ import pe.healthsync.meditrack.accesscontrol.domain.model.commands.RemoveDeviceC
 import pe.healthsync.meditrack.accesscontrol.domain.model.commands.RemoveItemCommand;
 import pe.healthsync.meditrack.accesscontrol.domain.model.commands.RemoveMemberCommand;
 import pe.healthsync.meditrack.accesscontrol.domain.model.commands.TryAccessCommand;
+import pe.healthsync.meditrack.accesscontrol.domain.model.commands.UpdateZoneTemperatureCommand;
+import pe.healthsync.meditrack.accesscontrol.domain.model.commands.UpdateZoneHumidityCommand;
 import pe.healthsync.meditrack.accesscontrol.domain.services.ZoneCommandService;
 import pe.healthsync.meditrack.accesscontrol.infrastructure.persistence.jpa.respositories.ZoneRepository;
 import pe.healthsync.meditrack.devices.infrastructure.persistence.jpa.respositories.DeviceRepository;
@@ -162,6 +164,34 @@ public class ZoneCommandServiceImpl implements ZoneCommandService {
                                 .orElseThrow(() -> new IllegalArgumentException("Item not found"));
 
                 zone.removeItem(item);
+
+                return zoneRepository.save(zone);
+        }
+
+        @Override
+        public Zone handle(UpdateZoneTemperatureCommand command) {
+                var zone = zoneRepository.findById(command.zoneId())
+                                .orElseThrow(() -> new IllegalArgumentException("Zone not found"));
+
+                if (!zone.getAdmin().getId().equals(command.adminId())) {
+                        throw new IllegalArgumentException("Only the admin can update zone temperature bounds");
+                }
+
+                zone.updateTemperatureBounds(command);
+
+                return zoneRepository.save(zone);
+        }
+
+        @Override
+        public Zone handle(UpdateZoneHumidityCommand command) {
+                var zone = zoneRepository.findById(command.zoneId())
+                                .orElseThrow(() -> new IllegalArgumentException("Zone not found"));
+
+                if (!zone.getAdmin().getId().equals(command.adminId())) {
+                        throw new IllegalArgumentException("Only the admin can update zone humidity bounds");
+                }
+
+                zone.updateHumidityBounds(command);
 
                 return zoneRepository.save(zone);
         }

@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,6 +33,8 @@ import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.AddDeviceR
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.AddItemRequest;
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.AddMemberRequest;
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.CreateZoneRequest;
+import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.UpdateHumidityRequest;
+import pe.healthsync.meditrack.accesscontrol.interfaces.rest.requests.UpdateTemperatureRequest;
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.responses.ZoneResponse;
 import pe.healthsync.meditrack.accesscontrol.interfaces.rest.responses.AlertResponse;
 import pe.healthsync.meditrack.shared.infrastructure.security.AuthenticatedUserProvider;
@@ -240,6 +243,38 @@ public class ZoneController {
                                 .toList();
 
                 return ResponseEntity.ok(alerts);
+        }
+
+        @Operation(summary = "Update temperature bounds for a zone", description = "Updates the min and max temperature for the specified zone. Only the zone admin can perform this action.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Temperature bounds updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ZoneResponse.class))),
+                        @ApiResponse(responseCode = "404", description = "Zone not found")
+        })
+        @PutMapping("/{id}/temperature")
+        public ResponseEntity<ZoneResponse> updateTemperature(@PathVariable("id") Long zoneId,
+                        @RequestBody UpdateTemperatureRequest request) {
+                var adminId = authenticatedUserProvider.getCurrentUser().getId();
+                var command = request.toCommand(adminId, zoneId);
+
+                var zone = zoneCommandService.handle(command);
+
+                return ResponseEntity.ok(ZoneResponse.fromEntity(zone));
+        }
+
+        @Operation(summary = "Update humidity bounds for a zone", description = "Updates the min and max humidity for the specified zone. Only the zone admin can perform this action.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Humidity bounds updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ZoneResponse.class))),
+                        @ApiResponse(responseCode = "404", description = "Zone not found")
+        })
+        @PutMapping("/{id}/humidity")
+        public ResponseEntity<ZoneResponse> updateHumidity(@PathVariable("id") Long zoneId,
+                        @RequestBody UpdateHumidityRequest request) {
+                var adminId = authenticatedUserProvider.getCurrentUser().getId();
+                var command = request.toCommand(adminId, zoneId);
+
+                var zone = zoneCommandService.handle(command);
+
+                return ResponseEntity.ok(ZoneResponse.fromEntity(zone));
         }
 
 }

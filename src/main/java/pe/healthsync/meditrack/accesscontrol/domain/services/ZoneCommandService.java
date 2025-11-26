@@ -9,6 +9,8 @@ import pe.healthsync.meditrack.accesscontrol.domain.model.commands.RemoveDeviceC
 import pe.healthsync.meditrack.accesscontrol.domain.model.commands.RemoveItemCommand;
 import pe.healthsync.meditrack.accesscontrol.domain.model.commands.RemoveMemberCommand;
 import pe.healthsync.meditrack.accesscontrol.domain.model.commands.TryAccessCommand;
+import pe.healthsync.meditrack.accesscontrol.domain.model.commands.UpdateZoneHumidityCommand;
+import pe.healthsync.meditrack.accesscontrol.domain.model.commands.UpdateZoneTemperatureCommand;
 
 public interface ZoneCommandService {
     Zone handle(CreateZoneCommand command);
@@ -26,4 +28,8 @@ public interface ZoneCommandService {
     Zone handle(AddItemCommand command);
 
     Zone handle(RemoveItemCommand command);
+
+    Zone handle(UpdateZoneTemperatureCommand command);
+
+    Zone handle(UpdateZoneHumidityCommand command);
 }

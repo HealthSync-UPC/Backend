@@ -13,6 +13,8 @@ import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import pe.healthsync.meditrack.accesscontrol.domain.model.commands.CreateZoneCommand;
+import pe.healthsync.meditrack.accesscontrol.domain.model.commands.UpdateZoneHumidityCommand;
+import pe.healthsync.meditrack.accesscontrol.domain.model.commands.UpdateZoneTemperatureCommand;
 import pe.healthsync.meditrack.accesscontrol.domain.model.entities.AccessLog;
 import pe.healthsync.meditrack.accesscontrol.domain.model.entities.Alert;
 import pe.healthsync.meditrack.devices.domain.model.aggregates.Device;
@@ -107,5 +109,15 @@ public class Zone extends AuditableAbstractAggregateRoot<Zone> {
     public Alert raiseAlert(Alert alert) {
         this.alerts.add(alert);
         return alert;
+    }
+
+    public void updateTemperatureBounds(UpdateZoneTemperatureCommand command) {
+        this.minTemperature = command.minTemperature();
+        this.maxTemperature = command.maxTemperature();
+    }
+
+    public void updateHumidityBounds(UpdateZoneHumidityCommand command) {
+        this.minHumidity = command.minHumidity();
+        this.maxHumidity = command.maxHumidity();
     }
 }
