@@ -3,7 +3,11 @@ package pe.healthsync.meditrack.devices.application.commandservices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import pe.healthsync.meditrack.accesscontrol.infrastructure.persistence.jpa.respositories.ZoneRepository;
+import pe.healthsync.meditrack.accesscontrol.interfaces.rest.responses.AlertResponse;
 import pe.healthsync.meditrack.devices.domain.model.aggregates.Device;
 import pe.healthsync.meditrack.devices.domain.model.commands.CreateDeviceCommand;
 import pe.healthsync.meditrack.devices.domain.model.commands.CreateDeviceReadingCommand;
@@ -15,6 +19,7 @@ import pe.healthsync.meditrack.devices.domain.services.DeviceCommandService;
 import pe.healthsync.meditrack.devices.infrastructure.persistence.jpa.respositories.DeviceRepository;
 import pe.healthsync.meditrack.iam.domain.model.queries.GetUserByIdQuery;
 import pe.healthsync.meditrack.iam.domain.services.UserQueryService;
+import pe.healthsync.meditrack.shared.infrastructure.websocket.AppWebSocketHandler;
 
 @Service
 public class DeviceCommandServiceImpl implements DeviceCommandService {
@@ -26,6 +31,12 @@ public class DeviceCommandServiceImpl implements DeviceCommandService {
 
     @Autowired
     private ZoneRepository zoneRepository;
+
+    @Autowired
+    private AppWebSocketHandler webSocketHandler;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     public Device handle(CreateDeviceCommand command) {
@@ -59,8 +70,25 @@ public class DeviceCommandServiceImpl implements DeviceCommandService {
 
         var alert = device.addReading(deviceReading);
 
-        if (alert != null)
+        if (alert != null) {
             zoneRepository.save(device.getZone());
+
+            var zone = zoneRepository.findById(device.getZone().getId()).get();
+            var alertEntity = zone.getAlerts().getLast();
+
+            var email = zone.getAdmin().getEmail();
+            var emailDomain = email.substring(email.indexOf('@') + 1);
+
+            AlertResponse alertResponse = AlertResponse.fromEntity(alertEntity);
+
+            String payload;
+            try {
+                payload = objectMapper.writeValueAsString(alertResponse);
+                webSocketHandler.sendToDomain(emailDomain, payload);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        }
 
         return deviceRepository.save(device);
     }
