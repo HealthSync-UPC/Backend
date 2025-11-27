@@ -90,7 +90,30 @@ public class DeviceCommandServiceImpl implements DeviceCommandService {
             }
         }
 
-        return deviceRepository.save(device);
+        var savedDevice = deviceRepository.save(device);
+
+        // Broadcast reading via WebSocket
+        try {
+            var email = device.getAdmin().getEmail();
+            var emailDomain = email.substring(email.indexOf('@') + 1);
+            
+            var readingResponse = pe.healthsync.meditrack.devices.interfaces.rest.responses.DeviceReadingResponse.fromEntity(deviceReading);
+            
+            // Create a custom payload including the type and deviceId
+            var payloadMap = new java.util.HashMap<String, Object>();
+            payloadMap.put("type", "READING");
+            payloadMap.put("deviceId", device.getId());
+            payloadMap.put("value", readingResponse.value());
+            payloadMap.put("readingAt", readingResponse.readingAt().toString());
+            
+            String payload = objectMapper.writeValueAsString(payloadMap);
+            webSocketHandler.sendToDomain(emailDomain, payload);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Don't fail the request if WebSocket fails
+        }
+
+        return savedDevice;
     }
 
     @Override
