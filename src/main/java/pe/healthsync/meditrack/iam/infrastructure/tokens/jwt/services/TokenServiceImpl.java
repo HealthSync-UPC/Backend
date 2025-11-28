@@ -44,7 +44,7 @@ public class TokenServiceImpl implements BearerTokenService {
     }
 
     @Override
-    public String generateToken(String email, String role) {
+    public String generateToken(String email, String role, Long id) {
         Instant issuedAt = Instant.now();
         Instant expiresAt = issuedAt.plus(expirationDays, ChronoUnit.DAYS);
 
@@ -53,6 +53,7 @@ public class TokenServiceImpl implements BearerTokenService {
                 .withIssuedAt(issuedAt)
                 .withExpiresAt(expiresAt)
                 .withClaim("role", role)
+                .withClaim("id", id)
                 .sign(algorithm);
     }
 

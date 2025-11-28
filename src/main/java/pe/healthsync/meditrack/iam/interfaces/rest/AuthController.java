@@ -106,7 +106,7 @@ public class AuthController {
 
         if (isMobile || isEdge) {
             // Mobile / Edge: Retornar JWT directamente
-            var token = tokenService.generateToken(user.getEmail(), user.getRole().toString());
+            var token = tokenService.generateToken(user.getEmail(), user.getRole().toString(), user.getId());
             var response = new TokenResponse(token);
             return ResponseEntity.ok(response);
         } else {

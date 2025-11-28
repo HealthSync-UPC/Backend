@@ -75,7 +75,7 @@ public class UserCommandServiceImpl implements UserCommandService {
             userRepository.save(user);
         }
 
-        return tokenService.generateToken(user.getEmail(), user.getRole().toString());
+        return tokenService.generateToken(user.getEmail(), user.getRole().toString(), user.getId());
     }
 
     @Override
