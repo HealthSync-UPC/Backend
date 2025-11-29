@@ -3,6 +3,9 @@ package pe.healthsync.meditrack.accesscontrol.application.commandservices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import pe.healthsync.meditrack.accesscontrol.domain.model.aggregates.Zone;
 import pe.healthsync.meditrack.accesscontrol.domain.model.commands.AddDeviceCommand;
 import pe.healthsync.meditrack.accesscontrol.domain.model.commands.AddItemCommand;
@@ -12,13 +15,16 @@ import pe.healthsync.meditrack.accesscontrol.domain.model.commands.RemoveDeviceC
 import pe.healthsync.meditrack.accesscontrol.domain.model.commands.RemoveItemCommand;
 import pe.healthsync.meditrack.accesscontrol.domain.model.commands.RemoveMemberCommand;
 import pe.healthsync.meditrack.accesscontrol.domain.model.commands.TryAccessCommand;
-import pe.healthsync.meditrack.accesscontrol.domain.model.commands.UpdateZoneTemperatureCommand;
 import pe.healthsync.meditrack.accesscontrol.domain.model.commands.UpdateZoneHumidityCommand;
+import pe.healthsync.meditrack.accesscontrol.domain.model.commands.UpdateZoneTemperatureCommand;
 import pe.healthsync.meditrack.accesscontrol.domain.services.ZoneCommandService;
 import pe.healthsync.meditrack.accesscontrol.infrastructure.persistence.jpa.respositories.ZoneRepository;
+import pe.healthsync.meditrack.accesscontrol.interfaces.rest.responses.AccessLogResponse;
 import pe.healthsync.meditrack.devices.infrastructure.persistence.jpa.respositories.DeviceRepository;
 import pe.healthsync.meditrack.iam.infrastructure.persistence.jpa.repositories.UserRepository;
 import pe.healthsync.meditrack.inventory.infrastructure.persistence.jpa.respositories.ItemRepository;
+import pe.healthsync.meditrack.shared.infrastructure.websocket.AppWebSocketHandler;
+import pe.healthsync.meditrack.shared.infrastructure.websocket.WebSocketMessage;
 
 @Service
 public class ZoneCommandServiceImpl implements ZoneCommandService {
@@ -33,6 +39,12 @@ public class ZoneCommandServiceImpl implements ZoneCommandService {
 
         @Autowired
         private ItemRepository itemRepository;
+
+        @Autowired
+        private AppWebSocketHandler webSocketHandler;
+
+        @Autowired
+        private ObjectMapper objectMapper;
 
         @Override
         public Zone handle(CreateZoneCommand command) {
@@ -95,7 +107,23 @@ public class ZoneCommandServiceImpl implements ZoneCommandService {
                 var user = userRepository.findById(command.userId())
                                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-                zone.addAccessLog(user);
+                var accessLog = zone.addAccessLog(user);
+
+                var accessResponse = AccessLogResponse.fromEntity(accessLog);
+
+                WebSocketMessage wsMessage = new WebSocketMessage(
+                                "access",
+                                accessResponse);
+
+                var email = zone.getAdmin().getEmail();
+                var emailDomain = email.substring(email.indexOf('@') + 1);
+
+                try {
+                        String payloadJson = objectMapper.writeValueAsString(wsMessage);
+                        webSocketHandler.sendToDomain(emailDomain, payloadJson);
+                } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                }
 
                 return zoneRepository.save(zone);
         }

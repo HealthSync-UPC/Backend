@@ -72,10 +72,11 @@ public class Zone extends AuditableAbstractAggregateRoot<Zone> {
         this.members = members;
     }
 
-    public void addAccessLog(User user) {
+    public AccessLog addAccessLog(User user) {
         boolean accessGranted = members.stream().anyMatch(member -> member.equals(user)) || admin.equals(user);
         AccessLog accessLog = new AccessLog(user, accessGranted);
         this.accessLogs.add(accessLog);
+        return accessLog;
     }
 
     public void addMember(User user) {

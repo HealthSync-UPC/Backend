@@ -20,6 +20,7 @@ import pe.healthsync.meditrack.devices.infrastructure.persistence.jpa.respositor
 import pe.healthsync.meditrack.iam.domain.model.queries.GetUserByIdQuery;
 import pe.healthsync.meditrack.iam.domain.services.UserQueryService;
 import pe.healthsync.meditrack.shared.infrastructure.websocket.AppWebSocketHandler;
+import pe.healthsync.meditrack.shared.infrastructure.websocket.WebSocketMessage;
 
 @Service
 public class DeviceCommandServiceImpl implements DeviceCommandService {
@@ -81,10 +82,13 @@ public class DeviceCommandServiceImpl implements DeviceCommandService {
 
             AlertResponse alertResponse = AlertResponse.fromEntity(alertEntity);
 
-            String payload;
+            WebSocketMessage wsMessage = new WebSocketMessage(
+                    "alert",
+                    alertResponse);
+
             try {
-                payload = objectMapper.writeValueAsString(alertResponse);
-                webSocketHandler.sendToDomain(emailDomain, payload);
+                String payloadJson = objectMapper.writeValueAsString(wsMessage);
+                webSocketHandler.sendToDomain(emailDomain, payloadJson);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
